@@ -7,8 +7,8 @@ module.exports = async function (self) {
 			type: 'boolean',
 			label: 'Channel State',
 			defaultStyle: {
-				bgcolor: combineRgb(255, 0, 0),
-				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(0, 255, 0),
+				color: combineRgb(255, 255, 255),
 			},
 			options: [
 				{
@@ -27,6 +27,36 @@ module.exports = async function (self) {
 				} else {
 					return false
 				}
+			},
+		},
+		playlist_playback_feedback: {
+			name: 'Playlist Playback State',
+			type: 'boolean',
+			label: 'Change style if playing',
+			description: 'This feedback will change the style of the button based on whether a track is currently playing.',
+			defaultStyle: {
+				bgcolor: combineRgb(0, 255, 0),
+				color: combineRgb(255, 255, 255),
+			},
+			
+			callback: () => {
+			  // Return true if playing, changing the button style
+			  return self.PlaylistPlaybackState.playing;
+			},
+		},
+		playlist_shuffle_feedback: {
+			name: 'Playlist Shuffle State',
+			type: 'boolean',
+			label: 'Change style if playing',
+			description: 'This feedback will change the style of the button based on whether Shuffle is currently on.',
+			defaultStyle: {
+				bgcolor: combineRgb(0, 255, 0),
+				color: combineRgb(255, 255, 255),
+			},
+			
+			callback: () => {
+			  // Return true if playing, changing the button style
+			  return self.PlaylistPlaybackState.shuffle;
 			},
 		},
 	})
