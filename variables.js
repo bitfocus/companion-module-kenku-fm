@@ -8,5 +8,6 @@ module.exports = async function (self) {
 		{ variableId: 'muted', name: 'Muted' },	
 		{ variableId: 'shuffle', name: 'Shuffle' },	
 		{ variableId: 'playing', name: 'Playing' },	
+		{ variableId: 'repeat', name: 'Repeat' },	
 	])
 }

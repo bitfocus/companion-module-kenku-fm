@@ -17,7 +17,11 @@ class ModuleInstance extends InstanceBase {
 			repeat: 'off',
 			track: null,
 			playlist: null,
-		  };
+		};
+		this.SoundboardPlaybackState = {
+			sounds: [],
+		};
+
 		this.pollingInterval = null;
 	}
 
@@ -77,17 +81,22 @@ class ModuleInstance extends InstanceBase {
 	}
 
 	startPolling() {
-		const pollIntervalMs = 3000; // Poll every 1000 milliseconds (1 second)
-		this.pollingInterval = setInterval(async () => {
-			try {
-			  await this.updatePlaylistPlaybackState();
-			  // Successfully updated the state, so no need for further action in this interval
-			} catch (error) {
-			  this.log('error', `Polling attempt failed: ${error.message}`);
-			  // The retry mechanism is inherently part of the next interval iteration.
-			}
-		  }, pollIntervalMs);
-		}
+		const pollIntervalMs = 3000; // Poll every 3000 milliseconds (3 seconds)
+	  
+		// Polling function that can be reused for different state updates
+		const poll = async (updateFunction) => {
+		  try {
+			await updateFunction();
+		  } catch (error) {
+			this.log('error', `Polling attempt for ${updateFunction.name} failed: ${error.message}`);
+		  }
+		};
+	  
+		this.pollingInterval = setInterval(() => {
+		  poll(this.updatePlaylistPlaybackState.bind(this));
+		  poll(this.updateSoundboardPlaybackState.bind(this));
+		}, pollIntervalMs);
+	  }
 
 	stopPolling() {
 		if (this.pollingInterval) {
@@ -152,14 +161,56 @@ class ModuleInstance extends InstanceBase {
 			reject(e); // Reject the promise on request error
 		  });
 	  
-		  req.end();
+		req.end();
+		this.log('debug', `Updated PlaylistPlaybackState`);
 		});
 	  }
 
 
+	async updateSoundboardPlaybackState() {
+		const options = {
+			hostname: this.config.host,
+			port: this.config.port,
+			path: '/v1/soundboard/playback',
+			method: 'GET',
+		};
+
+		return new Promise((resolve, reject) => {
+			const req = http.request(options, (res) => {
+			let data = '';
+
+			res.on('data', (chunk) => {
+				data += chunk;
+			});
+			res.on('end', () => {
+				try {
+				const parsedData = JSON.parse(data);
+				// Updating the SoundboardPlaybackState with the received data
+				this.SoundboardPlaybackState.sounds = parsedData.sounds;
+
+				// Update variables & feedbacks
+				this.updateVariableValues();
+
+				resolve(this.SoundboardPlaybackState); // Resolve with the updated state
+				} catch (e) {
+				this.log('error', 'Failed to parse soundboard playback state: ' + e.message);
+				reject(e);
+				}
+			});
+			});
+
+			req.on('error', (e) => {
+			this.log('error', 'Failed to get soundboard playback state: ' + e.message);
+			reject(e);
+			});
+
+			req.end();
+			this.log('debug', `Updated SoundboardPlaybackState`);
+		});
+	}	  
+
 	updateVariableValues() {
-	this.log('debug', `Updated PlaylistPlaybackState`);
-	this.checkFeedbacks('playlist_playback_feedback', 'playlist_shuffle_feedback');
+	this.checkFeedbacks('playlist_playback_feedback', 'playlist_shuffle_feedback', 'playlist_repeat_feedback', 'playlist_feedback', 'playlist_mute_feedback', 'soundboard_sound_feedback');
 
 	// Set the new values for the variables
 	this.setVariableValues({
@@ -171,6 +222,7 @@ class ModuleInstance extends InstanceBase {
 		'muted': this.PlaylistPlaybackState?.muted || 'False',		
 		'shuffle': this.PlaylistPlaybackState?.shuffle || 'False',		
 		'playing': this.PlaylistPlaybackState?.playing || 'False',		
+		'repeat': this.PlaylistPlaybackState?.repeat || 'off',		
 		});
 	}
 }
