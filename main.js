@@ -44,7 +44,16 @@ class ModuleInstance extends InstanceBase {
 		this.updateActions() // export actions
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
+
+
+		// Get initial state
+		this.updatePlaylistPlaybackState()
+		this.updateSoundboardPlaybackState()
+		this.generatePresets()
+
+		// Start Polling
 		this.startPolling()
+		this.startPresetsPolling()
 
 	}
 	// When module gets deleted
@@ -91,9 +100,28 @@ class ModuleInstance extends InstanceBase {
 		UpdateVariableDefinitions(this)
 	}
 
-	startPolling() {
-		const pollIntervalMs = 3000; // Poll every 3000 milliseconds (3 seconds)
+	startPresetsPolling() {
+		const presetsPollIntervalMs = 30000; // For example, poll every 30 seconds for presets
 	  
+		const poll = async (updateFunction) => {
+			try {
+			  await updateFunction();
+			} catch (error) {
+			  this.log('error', `Polling attempt for ${updateFunction.name} failed: ${error.message}`);
+			}
+		  };
+		
+		  this.presetsPollInterval = setInterval(() => {
+			poll(this.generatePresets.bind(this));
+		  }, presetsPollIntervalMs);
+		}
+	  
+	  startPolling() {
+		const pollIntervalMs = 4000; // Poll every 4000 milliseconds (4 seconds)
+	  
+	  
+		// Polling function that can be reused for different state updates
+		
 		// Polling function that can be reused for different state updates
 		const poll = async (updateFunction) => {
 		  try {
@@ -106,9 +134,8 @@ class ModuleInstance extends InstanceBase {
 		this.pollingInterval = setInterval(() => {
 		  poll(this.updatePlaylistPlaybackState.bind(this));
 		  poll(this.updateSoundboardPlaybackState.bind(this));
-		  poll(this.generatePresets.bind(this));
 		}, pollIntervalMs);
-	  }
+	}
 
 	stopPolling() {
 		if (this.pollingInterval) {
@@ -117,11 +144,11 @@ class ModuleInstance extends InstanceBase {
 		}
 	}
 
-	generatePresets() {
+	async generatePresets() {
 		const presets = {};
 		this.log('debug', "Generating Presets")
-		this.fetchPlaylistData()
-		this.PlaylistDataState.playlists.forEach((playlist, index) => {
+		await this.fetchPlaylistData()
+		this.PlaylistDataState.playlists?.forEach((playlist, index) => {
 		  presets[`playlist_${index}`] = {
 			type: 'button',
 			category: 'Playlists',
@@ -160,8 +187,8 @@ class ModuleInstance extends InstanceBase {
 			],
 		  };
 		});
-		this.fetchSoundboardData();
-		this.SoundboardDataState.sounds.forEach((sound, index) => {
+		await this.fetchSoundboardData();
+		this.SoundboardDataState.sounds?.forEach((sound, index) => {
 		  presets[`sound_${index}`] = {
 			type: 'button',
 			category: 'Sounds',
@@ -378,7 +405,6 @@ class ModuleInstance extends InstanceBase {
 			this.log('error', 'Failed to get soundboard playback state: ' + e.message);
 			reject(e);
 			});
-
 			req.end();
 			this.log('debug', `Updated SoundboardPlaybackState`);
 		});
