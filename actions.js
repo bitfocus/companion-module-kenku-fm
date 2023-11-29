@@ -1,3 +1,4 @@
+const stateFunctions = require('./state.js');
 const http = require('http')
 
 module.exports = function (self) {
@@ -33,7 +34,7 @@ module.exports = function (self) {
 					res.on('end', () => {
 						self.log('info', `Playlist started playing: ${responseBody}`)
 						// Update the PlaylistPlaybackState after the request is completed
-						self.updatePlaylistPlaybackState()
+						stateFunctions.updatePlaylistPlaybackState(self)
 					})
 				})
 
@@ -43,7 +44,7 @@ module.exports = function (self) {
 
 				req.write(data)
 				req.end()
-				self.updatePlaylistPlaybackState()
+				stateFunctions.updatePlaylistPlaybackState(self)
 			},
 		},
 
@@ -68,7 +69,7 @@ module.exports = function (self) {
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`) // After request, update the playback state
 					// Update the PlaylistPlaybackState after the request is completed
-					self.updatePlaylistPlaybackState()
+					stateFunctions.updatePlaylistPlaybackState(self)
 				})
 				req.on('error', (e) => {
 					self.log('error', `Error sending toggle request: ${e.message}`)
@@ -91,7 +92,7 @@ module.exports = function (self) {
 
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`) // After request, update the playback state
-					self.updatePlaylistPlaybackState()
+					stateFunctions.updatePlaylistPlaybackState(self)
 				})
 				req.on('error', (e) => {
 					self.log('error', `Error sending toggle request: ${e.message}`)
@@ -114,7 +115,7 @@ module.exports = function (self) {
 
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`) // After request, update the playback state
-					self.updatePlaylistPlaybackState()
+					stateFunctions.updatePlaylistPlaybackState(self)
 				})
 				req.on('error', (e) => {
 					self.log('error', `Error sending toggle request: ${e.message}`)
@@ -143,7 +144,7 @@ module.exports = function (self) {
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`) // After request, update the playback state
 					// Update the PlaylistPlaybackState after the request is completed
-					self.updatePlaylistPlaybackState()
+					stateFunctions.updatePlaylistPlaybackState(self)
 				})
 				req.on('error', (e) => {
 					self.log('error', `Error sending toggle request: ${e.message}`)
@@ -184,7 +185,7 @@ module.exports = function (self) {
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`) // After request, update the playback state
 					// Update the PlaylistPlaybackState after the request is completed
-					self.updatePlaylistPlaybackState()
+					stateFunctions.updatePlaylistPlaybackState(self)
 				})
 				req.on('error', (e) => {
 					self.log('error', `Error sending toggle request: ${e.message}`)
@@ -226,7 +227,7 @@ module.exports = function (self) {
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`) // After request, update the playback state
 					// Update the PlaylistPlaybackState after the request is completed
-					self.updatePlaylistPlaybackState()
+					stateFunctions.updatePlaylistPlaybackState(self)
 				})
 				req.on('error', (e) => {
 					self.log('error', `Error sending toggle request: ${e.message}`)
@@ -256,7 +257,7 @@ module.exports = function (self) {
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`) // After request, update the playback state
 					// Update the PlaylistPlaybackState after the request is completed
-					self.updatePlaylistPlaybackState()
+					stateFunctions.updatePlaylistPlaybackState(self)
 				})
 				req.on('error', (e) => {
 					self.log('error', `Error sending toggle request: ${e.message}`)
@@ -296,7 +297,7 @@ module.exports = function (self) {
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`) // After request, update the playback state
 					// Update the PlaylistPlaybackState after the request is completed
-					self.updatePlaylistPlaybackState()
+					stateFunctions.updatePlaylistPlaybackState(self)
 				})
 				req.on('error', (e) => {
 					self.log('error', `Error sending toggle request: ${e.message}`)
@@ -350,7 +351,7 @@ module.exports = function (self) {
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`) // After request, update the playback state
 					// Update the PlaylistPlaybackState after the request is completed
-					self.updatePlaylistPlaybackState()
+					stateFunctions.updatePlaylistPlaybackState(self)
 				})
 				req.on('error', (e) => {
 					self.log('error', `Error sending toggle request: ${e.message}`)
@@ -393,7 +394,7 @@ module.exports = function (self) {
 						self.log('info', `Sound started playing: ${responseBody}`)
 						// Wait for a short period before updating the state, it seems this API endpoint is slow in the update
 						setTimeout(() => {
-							self.updateSoundboardPlaybackState()
+							stateFunctions.updateSoundboardPlaybackState(self)
 						}, 1000) // Delay in milliseconds, adjust as needed
 					})
 				})
@@ -439,7 +440,7 @@ module.exports = function (self) {
 						self.log('info', `Sound stopped playing: ${responseBody}`)
 						// Wait for a short period before updating the state, it seems this API endpoint is slow in the update
 						setTimeout(() => {
-							self.updateSoundboardPlaybackState()
+							stateFunctions.updateSoundboardPlaybackState(self)
 						}, 1000) // Delay in milliseconds, adjust as needed
 					})
 				})
@@ -490,7 +491,7 @@ module.exports = function (self) {
 					res.on('end', () => {
 						self.log('info', `Sound Toggle action completed: ${responseBody}`)
 						setTimeout(() => {
-							self.updateSoundboardPlaybackState()
+							stateFunctions.updateSoundboardPlaybackState(self)
 						}, 1000) // Adjust delay as needed
 					})
 				})
