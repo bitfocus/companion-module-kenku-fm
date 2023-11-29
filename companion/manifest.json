@@ -3,14 +3,14 @@
 	"name": "KenkuFM",
 	"shortname": "kenkufm",
 	"description": "Controll a KenkuFM Player",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-your-module-name.git",
 	"bugs": "https://github.com/bitfocus/companion-module-your-module-name/issues",
 	"maintainers": [
 		{
 			"name": "Schemen",
-			"email": "Your email"
+			"email": "TbsywnrFBAjm.k5YIaQh4nYxh@privacyrelay.ch"
 		}
 	],
 	"runtime": {

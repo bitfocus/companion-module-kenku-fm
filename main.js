@@ -1,4 +1,5 @@
 const { InstanceBase, Regex, runEntrypoint, InstanceStatus } = require('@companion-module/base')
+const { combineRgb } = require('@companion-module/base')
 const UpgradeScripts = require('./upgrades')
 const UpdateActions = require('./actions')
 const UpdateFeedbacks = require('./feedbacks')
@@ -22,6 +23,11 @@ class ModuleInstance extends InstanceBase {
 			sounds: [],
 		};
 
+		this.PlaylistDataState = {
+			playlists: [],
+			tracks: []
+		  };
+
 		this.pollingInterval = null;
 	}
 
@@ -33,7 +39,7 @@ class ModuleInstance extends InstanceBase {
 		this.updateActions() // export actions
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
-		//this.startPolling()
+		this.startPolling()
 
 	}
 	// When module gets deleted
@@ -95,6 +101,7 @@ class ModuleInstance extends InstanceBase {
 		this.pollingInterval = setInterval(() => {
 		  poll(this.updatePlaylistPlaybackState.bind(this));
 		  poll(this.updateSoundboardPlaybackState.bind(this));
+		  poll(this.generatePlaylistsPresets.bind(this));
 		}, pollIntervalMs);
 	  }
 
@@ -105,7 +112,92 @@ class ModuleInstance extends InstanceBase {
 		}
 	}
 
-	
+	generatePlaylistsPresets() {
+		const presets = {};
+
+		this.fetchPlaylistData()
+		this.PlaylistDataState.playlists.forEach((playlist, index) => {
+		  presets[`playlist_${index}`] = {
+			type: 'button',
+			category: 'Playlists',
+			name: `Play: ${playlist.title}`,
+			style: {
+			  text: playlist.title,
+			  size: 'auto',
+			  color: combineRgb(255, 255, 255),
+			  bgcolor: combineRgb(0, 0, 0), // Example color
+			},
+			steps: [
+			  {
+				down: [
+				  {
+					actionId: 'play_playlist',
+					options: {
+					  id: playlist.id,
+					},
+				  },
+				],
+				up: [],
+			  },
+			],
+			feedbacks: [
+			  {
+				feedbackId: 'playlist_feedback',
+				options: {
+				  id: playlist.id,
+				},
+				style: {
+					// The style property is only valid for 'boolean' feedbacks, and defines the style change it will have.
+					color: combineRgb(255, 255, 255),
+					bgcolor: combineRgb(0, 255, 0),
+				},				
+			  },
+			],
+		  };
+		});
+	  
+		this.setPresetDefinitions(presets);
+	}	
+
+	// Populate PlaylistDataState
+	async fetchPlaylistData() {
+		const options = {
+		  hostname: this.config.host,
+		  port: this.config.port,
+		  path: '/v1/playlist',
+		  method: 'GET',
+		};
+	  
+		return new Promise((resolve, reject) => {
+		  const req = http.request(options, (res) => {
+			let data = '';
+	  
+			res.on('data', (chunk) => {
+			  data += chunk;
+			});
+			res.on('end', () => {
+			  try {
+				const parsedData = JSON.parse(data);
+				// Update the PlaylistDataState with the received data
+				this.PlaylistDataState.playlists = parsedData.playlists;
+				this.PlaylistDataState.tracks = parsedData.tracks;
+				resolve();
+			  } catch (e) {
+				this.log('error', 'Failed to parse playlist data: ' + e.message);
+				reject(e);
+			  }
+			});
+		  });
+	  
+		  req.on('error', (e) => {
+			this.log('error', 'Failed to get playlist data: ' + e.message);
+			reject(e);
+		  });
+	  
+		  req.end();
+		});
+	}	
+
 	async updatePlaylistPlaybackState() {
 		const options = {
 		  hostname: this.config.host,

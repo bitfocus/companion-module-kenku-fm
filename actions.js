@@ -32,6 +32,8 @@ module.exports = function (self) {
 				  });
 				  res.on('end', () => {
 					self.log('info', `Playlist started playing: ${responseBody}`);
+					// Update the PlaylistPlaybackState after the request is completed
+					self.updatePlaylistPlaybackState();					
 				  });
 				});
 			  
@@ -64,14 +66,15 @@ module.exports = function (self) {
 				};
 
 				const req = http.request(options, (res) => {
-					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`);					// After request, update the playback state
+					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`);// After request, update the playback state
+					// Update the PlaylistPlaybackState after the request is completed
+					self.updatePlaylistPlaybackState();
 				});
 				req.on('error', (e) => {
 				self.log('error', `Error sending toggle request: ${e.message}`);
 				});
 
 				req.end();
-				self.updatePlaylistPlaybackState()
 			},
 		},
 
@@ -139,6 +142,8 @@ module.exports = function (self) {
 
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`);// After request, update the playback state
+					// Update the PlaylistPlaybackState after the request is completed
+					self.updatePlaylistPlaybackState();
 				});
 				req.on('error', (e) => {
 				self.log('error', `Error sending toggle request: ${e.message}`);
@@ -146,7 +151,6 @@ module.exports = function (self) {
 				
 				req.write(data);
 				req.end();
-				self.updatePlaylistPlaybackState()
 			},
 		},
 
@@ -179,6 +183,8 @@ module.exports = function (self) {
 
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`);// After request, update the playback state
+					// Update the PlaylistPlaybackState after the request is completed
+					self.updatePlaylistPlaybackState();					
 				});
 				req.on('error', (e) => {
 				self.log('error', `Error sending toggle request: ${e.message}`);
@@ -186,7 +192,6 @@ module.exports = function (self) {
 				
 				req.write(data);
 				req.end();
-				self.updatePlaylistPlaybackState()
 			},
 		},
 
@@ -220,6 +225,8 @@ module.exports = function (self) {
 
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`);// After request, update the playback state
+					// Update the PlaylistPlaybackState after the request is completed
+					self.updatePlaylistPlaybackState();					
 				});
 				req.on('error', (e) => {
 				self.log('error', `Error sending toggle request: ${e.message}`);
@@ -227,7 +234,6 @@ module.exports = function (self) {
 				
 				req.write(data);
 				req.end();
-				self.updatePlaylistPlaybackState()
 			},
 		},
 
@@ -249,6 +255,8 @@ module.exports = function (self) {
 
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`);// After request, update the playback state
+					// Update the PlaylistPlaybackState after the request is completed
+					self.updatePlaylistPlaybackState();
 				});
 				req.on('error', (e) => {
 				self.log('error', `Error sending toggle request: ${e.message}`);
@@ -256,7 +264,6 @@ module.exports = function (self) {
 				
 				req.write(data);
 				req.end();
-				self.updatePlaylistPlaybackState()
 			},
 		},
 
@@ -288,6 +295,8 @@ module.exports = function (self) {
 
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`);// After request, update the playback state
+					// Update the PlaylistPlaybackState after the request is completed
+					self.updatePlaylistPlaybackState();
 				});
 				req.on('error', (e) => {
 				self.log('error', `Error sending toggle request: ${e.message}`);
@@ -295,7 +304,6 @@ module.exports = function (self) {
 				
 				req.write(data);
 				req.end();
-				self.updatePlaylistPlaybackState()
 			},
 		},
 
@@ -341,6 +349,8 @@ module.exports = function (self) {
 
 				const req = http.request(options, (res) => {
 					self.log('debug', `Request to ${options.path} sent, status code: ${res.statusCode}`);// After request, update the playback state
+					// Update the PlaylistPlaybackState after the request is completed
+					self.updatePlaylistPlaybackState();
 				});
 				req.on('error', (e) => {
 				self.log('error', `Error sending toggle request: ${e.message}`);
@@ -348,7 +358,6 @@ module.exports = function (self) {
 				
 				req.write(data);
 				req.end();
-				self.updatePlaylistPlaybackState()
 			},
 		},
 
