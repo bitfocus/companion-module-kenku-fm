@@ -24,6 +24,11 @@ class ModuleInstance extends InstanceBase {
 		};
 
 		this.PlaylistDataState = {
+			soundboards: [],
+			sounds: []
+		  };
+
+		this.SoundboardDataState = {
 			playlists: [],
 			tracks: []
 		  };
@@ -101,7 +106,7 @@ class ModuleInstance extends InstanceBase {
 		this.pollingInterval = setInterval(() => {
 		  poll(this.updatePlaylistPlaybackState.bind(this));
 		  poll(this.updateSoundboardPlaybackState.bind(this));
-		  poll(this.generatePlaylistsPresets.bind(this));
+		  poll(this.generatePresets.bind(this));
 		}, pollIntervalMs);
 	  }
 
@@ -112,9 +117,9 @@ class ModuleInstance extends InstanceBase {
 		}
 	}
 
-	generatePlaylistsPresets() {
+	generatePresets() {
 		const presets = {};
-
+		this.log('debug', "Generating Presets")
 		this.fetchPlaylistData()
 		this.PlaylistDataState.playlists.forEach((playlist, index) => {
 		  presets[`playlist_${index}`] = {
@@ -151,6 +156,45 @@ class ModuleInstance extends InstanceBase {
 					color: combineRgb(255, 255, 255),
 					bgcolor: combineRgb(0, 255, 0),
 				},				
+			  },
+			],
+		  };
+		});
+		this.fetchSoundboardData();
+		this.SoundboardDataState.sounds.forEach((sound, index) => {
+		  presets[`sound_${index}`] = {
+			type: 'button',
+			category: 'Sounds',
+			name: `Play: ${sound.title}`,
+			style: {
+			  text: sound.title,
+			  size: 'auto',
+			  color: combineRgb(255, 255, 255),
+			  bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [
+			  {
+				down: [
+				  {
+					actionId: 'soundboard_toggle_sound',
+					options: {
+					  id: sound.id,
+					},
+				  },
+				],
+				up: [],
+			  },
+			],
+			feedbacks: [
+			  {
+				feedbackId: 'soundboard_sound_feedback',
+				options: {
+				  id: sound.id,
+				},
+				style: {
+				  color: combineRgb(255, 255, 255),
+				  bgcolor: combineRgb(0, 255, 0),
+				},
 			  },
 			],
 		  };
@@ -197,6 +241,45 @@ class ModuleInstance extends InstanceBase {
 		  req.end();
 		});
 	}	
+
+	// Populate SoundboardDataState
+	async fetchSoundboardData() {
+		const options = {
+		  hostname: this.config.host,
+		  port: this.config.port,
+		  path: '/v1/soundboard',
+		  method: 'GET',
+		};
+	  
+		return new Promise((resolve, reject) => {
+		  const req = http.request(options, (res) => {
+			let data = '';
+	  
+			res.on('data', (chunk) => {
+			  data += chunk;
+			});
+			res.on('end', () => {
+			  try {
+				const parsedData = JSON.parse(data);
+				// Update the PlaylistDataState with the received data
+				this.SoundboardDataState.soundboards = parsedData.soundboards;
+				this.SoundboardDataState.sounds = parsedData.sounds;
+				resolve();
+			  } catch (e) {
+				this.log('error', 'Failed to parse soundboard data: ' + e.message);
+				reject(e);
+			  }
+			});
+		  });
+	  
+		  req.on('error', (e) => {
+			this.log('error', 'Failed to get soundboard data: ' + e.message);
+			reject(e);
+		  });
+	  
+		  req.end();
+		});
+	}
 
 	async updatePlaylistPlaybackState() {
 		const options = {
