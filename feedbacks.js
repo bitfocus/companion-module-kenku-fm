@@ -36,21 +36,21 @@ module.exports = async function (self) {
 			description: 'This feedback will change the style of the button based on your selected playlist ID.',
 			options: [
 				{
-				  type: 'textinput',
-				  label: 'Playlist ID',
-				  id: 'id',
-				  default: '',
-				  required: true,
+					type: 'textinput',
+					label: 'Playlist ID',
+					id: 'id',
+					default: '',
+					required: true,
 				},
-			  ],  
+			],
 			defaultStyle: {
 				bgcolor: combineRgb(0, 255, 0),
 				color: combineRgb(255, 255, 255),
 			},
-			
+
 			callback: (feedback) => {
-			  // Return true if playing, changing the button style
-			  return self.PlaylistPlaybackState.playlist?.id === feedback.options.id;
+				// Return true if playing, changing the button style
+				return self.PlaylistPlaybackState.playlist?.id === feedback.options.id
 			},
 		},
 		playlist_playback_feedback: {
@@ -62,10 +62,10 @@ module.exports = async function (self) {
 				bgcolor: combineRgb(0, 255, 0),
 				color: combineRgb(255, 255, 255),
 			},
-			
+
 			callback: () => {
-			  // Return true if playing, changing the button style
-			  return self.PlaylistPlaybackState.playing;
+				// Return true if playing, changing the button style
+				return self.PlaylistPlaybackState.playing
 			},
 		},
 		playlist_shuffle_feedback: {
@@ -77,10 +77,10 @@ module.exports = async function (self) {
 				bgcolor: combineRgb(0, 255, 0),
 				color: combineRgb(255, 255, 255),
 			},
-			
+
 			callback: () => {
-			  // Return true if playing, changing the button style
-			  return self.PlaylistPlaybackState.shuffle;
+				// Return true if playing, changing the button style
+				return self.PlaylistPlaybackState.shuffle
 			},
 		},
 		playlist_mute_feedback: {
@@ -92,37 +92,38 @@ module.exports = async function (self) {
 				bgcolor: combineRgb(0, 255, 0),
 				color: combineRgb(255, 255, 255),
 			},
-			
+
 			callback: () => {
-			  // Return true if playing, changing the button style
-			  return self.PlaylistPlaybackState.muted;
+				// Return true if playing, changing the button style
+				return self.PlaylistPlaybackState.muted
 			},
-		},		
+		},
 		playlist_repeat_feedback: {
 			name: 'Playlist Repeat State',
 			type: 'boolean',
 			label: 'Change style if selected state',
-			description: 'This feedback will change the style of the button based on whether what Repeat state is on and selected.',
+			description:
+				'This feedback will change the style of the button based on whether what Repeat state is on and selected.',
 			defaultStyle: {
 				bgcolor: combineRgb(0, 255, 0),
 				color: combineRgb(255, 255, 255),
 			},
 			options: [
 				{
-				  id: 'repeat_state',
-				  type: 'dropdown',
-				  label: 'Repeat State',
-				  default: 'off', // Set a default value
-				  choices: [
-					{ id: 'track', label: 'Track' },
-					{ id: 'playlist', label: 'Playlist' },
-					{ id: 'off', label: 'Off' },
-				  ],
+					id: 'repeat_state',
+					type: 'dropdown',
+					label: 'Repeat State',
+					default: 'off', // Set a default value
+					choices: [
+						{ id: 'track', label: 'Track' },
+						{ id: 'playlist', label: 'Playlist' },
+						{ id: 'off', label: 'Off' },
+					],
 				},
-			  ],
+			],
 			callback: (feedback) => {
 				// Check if the current repeat state matches the user-selected state
-				return self.PlaylistPlaybackState.repeat === feedback.options.repeat_state;
+				return self.PlaylistPlaybackState.repeat === feedback.options.repeat_state
 			},
 		},
 		soundboard_sound_feedback: {
@@ -132,21 +133,22 @@ module.exports = async function (self) {
 			description: 'This feedback will change the style of the button based on your selected Sound ID.',
 			options: [
 				{
-				  type: 'textinput',
-				  label: 'Sound ID',
-				  id: 'id',
-				  default: '',
-				  required: true,
+					type: 'textinput',
+					label: 'Sound ID',
+					id: 'id',
+					default: '',
+					required: true,
 				},
-			  ],  
+			],
 			defaultStyle: {
 				bgcolor: combineRgb(0, 255, 0),
 				color: combineRgb(255, 255, 255),
 			},
-			
+
 			callback: (feedback) => {
 				// Check if the sound with the given ID is in the currently playing sounds
-				return self.SoundboardPlaybackState.sounds.some(sound => sound.id === feedback.options.id);			},
+				return self.SoundboardPlaybackState.sounds.some((sound) => sound.id === feedback.options.id)
+			},
 		},
 	})
 }

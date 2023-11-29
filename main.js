@@ -4,13 +4,11 @@ const UpgradeScripts = require('./upgrades')
 const UpdateActions = require('./actions')
 const UpdateFeedbacks = require('./feedbacks')
 const UpdateVariableDefinitions = require('./variables')
-const stateFunctions = require('./state');
-const http = require('http');
-
+const stateFunctions = require('./state')
 
 class ModuleInstance extends InstanceBase {
 	constructor(internal) {
-		super(internal);
+		super(internal)
 		this.PlaylistPlaybackState = {
 			playing: false,
 			volume: null,
@@ -19,22 +17,23 @@ class ModuleInstance extends InstanceBase {
 			repeat: 'off',
 			track: null,
 			playlist: null,
-		};
+		}
 		this.SoundboardPlaybackState = {
 			sounds: [],
-		};
+		}
 
 		this.PlaylistDataState = {
 			soundboards: [],
-			sounds: []
-		  };
+			sounds: [],
+		}
 
 		this.SoundboardDataState = {
 			playlists: [],
-			tracks: []
-		};
+			tracks: [],
+		}
 
-		this.pollingInterval = null;
+		this.pollingInterval = null
+		this.presetsPollInterval = null
 	}
 
 	async init(config) {
@@ -45,7 +44,6 @@ class ModuleInstance extends InstanceBase {
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
 
-
 		// Get initial state
 		stateFunctions.updatePlaylistPlaybackState(this)
 		stateFunctions.updateSoundboardPlaybackState(this)
@@ -54,12 +52,11 @@ class ModuleInstance extends InstanceBase {
 		// Start Polling
 		this.startPolling()
 		this.startPresetsPolling()
-
 	}
 	// When module gets deleted
 	async destroy() {
-		this.log('debug', 'destroy');
-		this.stopPolling();
+		this.log('debug', 'destroy')
+		this.stopPolling()
 	}
 
 	async configUpdated(config) {
@@ -100,152 +97,159 @@ class ModuleInstance extends InstanceBase {
 		UpdateVariableDefinitions(this)
 	}
 
-
 	startPresetsPolling() {
-		const presetsPollIntervalMs = 30000; // For example, poll every 30 seconds for presets
-	  
+		const presetsPollIntervalMs = 30000 // For example, poll every 30 seconds for presets
+
 		const poll = async (updateFunction) => {
 			try {
-			  await updateFunction();
+				await updateFunction()
 			} catch (error) {
-			  this.log('error', `Polling attempt for ${updateFunction.name} failed: ${error.message}`);
+				this.log('error', `Polling attempt for ${updateFunction.name} failed: ${error.message}`)
 			}
-		  };
-		
-		  this.presetsPollInterval = setInterval(() => {
-			poll(this.generatePresets.bind(this));
-		  }, presetsPollIntervalMs);
 		}
-	  
-	  startPolling() {
-		const pollIntervalMs = 4000; // Poll every 4000 milliseconds (4 seconds)
-	  
-	  
-		// Polling function that can be reused for different state updates
-		
+
+		this.presetsPollInterval = setInterval(() => {
+			poll(this.generatePresets.bind(this))
+		}, presetsPollIntervalMs)
+	}
+
+	startPolling() {
+		const pollIntervalMs = 4000 // Poll every 4000 milliseconds (4 seconds)
+
 		// Polling function that can be reused for different state updates
 		const poll = async (updateFunction) => {
-		  try {
-			await updateFunction();
-		  } catch (error) {
-			this.log('error', `Polling attempt for ${updateFunction.name} failed: ${error.message}`);
-		  }
-		};
-	  
+			try {
+				await updateFunction()
+			} catch (error) {
+				this.log('error', `Polling attempt for ${updateFunction.name} failed: ${error.message}`)
+			}
+		}
+
 		this.pollingInterval = setInterval(() => {
-			poll(() => stateFunctions.updatePlaylistPlaybackState(this));
-			poll(() => stateFunctions.updateSoundboardPlaybackState(this));
-		}, pollIntervalMs);
+			poll(() => stateFunctions.updatePlaylistPlaybackState(this))
+			poll(() => stateFunctions.updateSoundboardPlaybackState(this))
+		}, pollIntervalMs)
 	}
 
 	stopPolling() {
 		if (this.pollingInterval) {
-		clearInterval(this.pollingInterval);
-		this.pollingInterval = null;
+			clearInterval(this.pollingInterval)
+			this.pollingInterval = null
+		}
+		if (this.presetsPollInterval) {
+			clearInterval(this.presetsPollInterval)
+			this.presetsPollInterval = null
 		}
 	}
 
 	async generatePresets() {
-		const presets = {};
-		this.log('debug', "Generating Presets")
+		const presets = {}
+		this.log('debug', 'Generating Presets')
 		await stateFunctions.fetchPlaylistData(this)
 		this.PlaylistDataState.playlists?.forEach((playlist, index) => {
-		  presets[`playlist_${index}`] = {
-			type: 'button',
-			category: 'Playlists',
-			name: `Play: ${playlist.title}`,
-			style: {
-			  text: playlist.title,
-			  size: 'auto',
-			  color: combineRgb(255, 255, 255),
-			  bgcolor: combineRgb(0, 0, 0), // Example color
-			},
-			steps: [
-			  {
-				down: [
-				  {
-					actionId: 'play_playlist',
-					options: {
-					  id: playlist.id,
-					},
-				  },
-				],
-				up: [],
-			  },
-			],
-			feedbacks: [
-			  {
-				feedbackId: 'playlist_feedback',
-				options: {
-				  id: playlist.id,
-				},
+			presets[`playlist_${index}`] = {
+				type: 'button',
+				category: 'Playlists',
+				name: `Play: ${playlist.title}`,
 				style: {
-					// The style property is only valid for 'boolean' feedbacks, and defines the style change it will have.
+					text: playlist.title,
+					size: 'auto',
 					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(0, 255, 0),
-				},				
-			  },
-			],
-		  };
-		});
-		await stateFunctions.fetchSoundboardData(this);
-		this.SoundboardDataState.sounds?.forEach((sound, index) => {
-		  presets[`sound_${index}`] = {
-			type: 'button',
-			category: 'Sounds',
-			name: `Play: ${sound.title}`,
-			style: {
-			  text: sound.title,
-			  size: 'auto',
-			  color: combineRgb(255, 255, 255),
-			  bgcolor: combineRgb(0, 0, 0),
-			},
-			steps: [
-			  {
-				down: [
-				  {
-					actionId: 'soundboard_toggle_sound',
-					options: {
-					  id: sound.id,
+					bgcolor: combineRgb(0, 0, 0), // Example color
+				},
+				steps: [
+					{
+						down: [
+							{
+								actionId: 'play_playlist',
+								options: {
+									id: playlist.id,
+								},
+							},
+						],
+						up: [],
 					},
-				  },
 				],
-				up: [],
-			  },
-			],
-			feedbacks: [
-			  {
-				feedbackId: 'soundboard_sound_feedback',
-				options: {
-				  id: sound.id,
-				},
+				feedbacks: [
+					{
+						feedbackId: 'playlist_feedback',
+						options: {
+							id: playlist.id,
+						},
+						style: {
+							// The style property is only valid for 'boolean' feedbacks, and defines the style change it will have.
+							color: combineRgb(255, 255, 255),
+							bgcolor: combineRgb(0, 255, 0),
+						},
+					},
+				],
+			}
+		})
+		await stateFunctions.fetchSoundboardData(this)
+		this.SoundboardDataState.sounds?.forEach((sound, index) => {
+			presets[`sound_${index}`] = {
+				type: 'button',
+				category: 'Sounds',
+				name: `Play: ${sound.title}`,
 				style: {
-				  color: combineRgb(255, 255, 255),
-				  bgcolor: combineRgb(0, 255, 0),
+					text: sound.title,
+					size: 'auto',
+					color: combineRgb(255, 255, 255),
+					bgcolor: combineRgb(0, 0, 0),
 				},
-			  },
-			],
-		  };
-		});
-	  
-		this.setPresetDefinitions(presets);
-	}	
+				steps: [
+					{
+						down: [
+							{
+								actionId: 'soundboard_toggle_sound',
+								options: {
+									id: sound.id,
+								},
+							},
+						],
+						up: [],
+					},
+				],
+				feedbacks: [
+					{
+						feedbackId: 'soundboard_sound_feedback',
+						options: {
+							id: sound.id,
+						},
+						style: {
+							color: combineRgb(255, 255, 255),
+							bgcolor: combineRgb(0, 255, 0),
+						},
+					},
+				],
+			}
+		})
+
+		this.setPresetDefinitions(presets)
+	}
 
 	updateVariableValues() {
-	this.checkFeedbacks('playlist_playback_feedback', 'playlist_shuffle_feedback', 'playlist_repeat_feedback', 'playlist_feedback', 'playlist_mute_feedback', 'soundboard_sound_feedback');
+		this.checkFeedbacks(
+			'playlist_playback_feedback',
+			'playlist_shuffle_feedback',
+			'playlist_repeat_feedback',
+			'playlist_feedback',
+			'playlist_mute_feedback',
+			'soundboard_sound_feedback'
+		)
 
-	// Set the new values for the variables
-	this.setVariableValues({
-		'current_track_title': this.PlaylistPlaybackState.track?.title || 'None',
-		'current_track_progress': this.PlaylistPlaybackState.track?.progress || 'None',
-		'current_track_duration': this.PlaylistPlaybackState.track?.duration || 'None',
-		'current_playlist_title': this.PlaylistPlaybackState.playlist?.title || 'None',
-		'volume': this.PlaylistPlaybackState?.volume || 'False',
-		'muted': this.PlaylistPlaybackState?.muted || 'False',		
-		'shuffle': this.PlaylistPlaybackState?.shuffle || 'False',		
-		'playing': this.PlaylistPlaybackState?.playing || 'False',		
-		'repeat': this.PlaylistPlaybackState?.repeat || 'off',		
-		});
+		// Set the new values for the variables
+		this.setVariableValues({
+			current_track_title: this.PlaylistPlaybackState.track?.title || 'None',
+			current_track_progress: this.PlaylistPlaybackState.track?.progress || 'None',
+			current_track_duration: this.PlaylistPlaybackState.track?.duration || 'None',
+			current_playlist_title: this.PlaylistPlaybackState.playlist?.title || 'None',
+			volume: this.PlaylistPlaybackState?.volume || 'False',
+			muted: this.PlaylistPlaybackState?.muted || 'False',
+			shuffle: this.PlaylistPlaybackState?.shuffle || 'False',
+			playing: this.PlaylistPlaybackState?.playing || 'False',
+			repeat: this.PlaylistPlaybackState?.repeat || 'off',
+		})
 	}
 }
 

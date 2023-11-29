@@ -5,8 +5,8 @@
 	"description": "Controll a KenkuFM Player",
 	"version": "0.1.0",
 	"license": "MIT",
-	"repository": "git+https://github.com/bitfocus/companion-module-your-module-name.git",
-	"bugs": "https://github.com/bitfocus/companion-module-your-module-name/issues",
+	"repository": "git+https://github.com/bitfocus/companion-module-kenkufm.git",
+	"bugs": "https://github.com/bitfocus/companion-module-kenkufm/issues",
 	"maintainers": [
 		{
 			"name": "Schemen",
