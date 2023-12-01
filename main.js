@@ -190,8 +190,7 @@ class ModuleInstance extends InstanceBase {
 							id: playlist.id,
 						},
 						style: {
-							// The style property is only valid for 'boolean' feedbacks, and defines the style change it will have.
-							color: combineRgb(255, 255, 255),
+							color: combineRgb(0, 0, 0),
 							bgcolor: combineRgb(0, 255, 0),
 						},
 					},
@@ -230,7 +229,7 @@ class ModuleInstance extends InstanceBase {
 							id: sound.id,
 						},
 						style: {
-							color: combineRgb(255, 255, 255),
+							color: combineRgb(0, 0, 0),
 							bgcolor: combineRgb(0, 255, 0),
 						},
 					},
