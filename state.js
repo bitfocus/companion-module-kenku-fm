@@ -32,6 +32,7 @@ async function fetchPlaylistData(self) {
 
 		req.on('error', (e) => {
 			self.log('error', 'Failed to get playlist data: ' + e.message)
+			self.stopPolling()
 			reject(e)
 		})
 
@@ -71,6 +72,7 @@ async function fetchSoundboardData(self) {
 
 		req.on('error', (e) => {
 			self.log('error', 'Failed to get soundboard data: ' + e.message)
+			self.stopPolling()
 			reject(e)
 		})
 
@@ -135,6 +137,7 @@ async function updatePlaylistPlaybackState(self) {
 
 		req.on('error', (e) => {
 			self.log('error', 'Failed to get playlist playback state: ' + e.message)
+			self.stopPolling()
 			reject(e) // Reject the promise on request error
 		})
 
@@ -178,6 +181,7 @@ async function updateSoundboardPlaybackState(self) {
 
 		req.on('error', (e) => {
 			self.log('error', 'Failed to get soundboard playback state: ' + e.message)
+			self.stopPolling()
 			reject(e)
 		})
 		req.end()

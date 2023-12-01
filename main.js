@@ -5,6 +5,7 @@ const UpdateActions = require('./actions')
 const UpdateFeedbacks = require('./feedbacks')
 const UpdateVariableDefinitions = require('./variables')
 const stateFunctions = require('./state')
+const http = require('http')
 
 class ModuleInstance extends InstanceBase {
 	constructor(internal) {
@@ -34,6 +35,8 @@ class ModuleInstance extends InstanceBase {
 
 		this.pollingInterval = null
 		this.presetsPollInterval = null
+		this.apiCheckIntervalMs = null
+		this.isPollingActive = false
 	}
 
 	async init(config) {
@@ -44,14 +47,23 @@ class ModuleInstance extends InstanceBase {
 		this.updateFeedbacks() // export feedbacks
 		this.updateVariableDefinitions() // export variable definitions
 
-		// Get initial state
-		stateFunctions.updatePlaylistPlaybackState(this)
-		stateFunctions.updateSoundboardPlaybackState(this)
-		this.generatePresets()
+		this.startAndCheckApiAvailability((isAvailable) => {
+			if (isAvailable) {
+				if (!this.isPollingActive) {
+					// Get initial state
+					stateFunctions.updatePlaylistPlaybackState(this)
+					stateFunctions.updateSoundboardPlaybackState(this)
+					this.generatePresets()
 
-		// Start Polling
-		this.startPolling()
-		this.startPresetsPolling()
+					// Start Polling
+					this.startPolling()
+					this.startPresetsPolling()
+					this.isPollingActive = true
+				}
+			} else {
+				this.log('warn', 'Waiting for API to be available...')
+			}
+		})
 	}
 	// When module gets deleted
 	async destroy() {
@@ -140,6 +152,7 @@ class ModuleInstance extends InstanceBase {
 			clearInterval(this.presetsPollInterval)
 			this.presetsPollInterval = null
 		}
+		this.isPollingActive = false // Indicate that polling has stopped
 	}
 
 	async generatePresets() {
@@ -224,8 +237,37 @@ class ModuleInstance extends InstanceBase {
 				],
 			}
 		})
-
 		this.setPresetDefinitions(presets)
+	}
+
+	startAndCheckApiAvailability(callback) {
+		const apiCheckIntervalMs = 10000
+
+		const checkApi = () => {
+			const options = {
+				hostname: this.config.host,
+				port: this.config.port,
+				path: '/v1/playlist',
+				method: 'GET',
+			}
+
+			const req = http.request(options, (res) => {
+				if (res.statusCode === 200) {
+					callback(true)
+					this.log('debug', 'API Healthy')
+				} else {
+					callback(false)
+				}
+			})
+
+			req.on('error', () => {
+				callback(false)
+			})
+
+			req.end()
+		}
+
+		setInterval(checkApi, apiCheckIntervalMs)
 	}
 
 	updateVariableValues() {
