@@ -3,10 +3,10 @@
 	"name": "KenkuFM",
 	"shortname": "kenkufm",
 	"description": "Controll a KenkuFM Player",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"license": "MIT",
-	"repository": "git+https://github.com/bitfocus/companion-module-kenkufm.git",
-	"bugs": "https://github.com/bitfocus/companion-module-kenkufm/issues",
+	"repository": "git+https://github.com/bitfocus/companion-module-kenku-fm.git",
+	"bugs": "https://github.com/bitfocus/companion-module-kenku-fm/issues",
 	"maintainers": [
 		{
 			"name": "Schemen",
